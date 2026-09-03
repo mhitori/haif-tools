@@ -19,7 +19,7 @@
 ## 使い方
 
 ```
-python3 candidates_board.py neta_example.md --today 2026-09-07
+python3 candidates_board.py neta_example.md --today 2026-09-07 --example
 ```
 
 `neta_example.md` と同じ場所に `candidates.html` ができるので、ブラウザで開きます。
@@ -32,6 +32,7 @@ python3 candidates_board.py 自分のネタ帳.md -o 出力先.html
 
 `--today` は基準日の指定です。省略すると今日になります。記入例は 2026-09 を前提に書いてあるので、日付を固定して描くと説明どおりの表示になります。
 `--check` を付けると HTML を書かずに、件数と書式エラーだけ表示します。
+`--example` を付けると、ボードの最上部に「これは記入例です」の帯を出します。同梱の見本HTMLはこの帯つきで生成しています。
 
 ## ネタ帳の書き方
 

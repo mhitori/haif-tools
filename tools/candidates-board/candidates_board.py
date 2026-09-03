@@ -6,6 +6,7 @@
     python3 candidates_board.py                       # ./neta.md → ./candidates.html
     python3 candidates_board.py 自分のネタ帳.md -o 出力.html
     python3 candidates_board.py neta_example.md --today 2026-09-07   # 記入例を固定日で描く
+    python3 candidates_board.py neta_example.md --today 2026-09-07 --example   # 上部に「記入例」の帯を出す
 
 決めごと（このボードが守っていること）:
   - 正本はネタ帳の .md だけ。ボードは読んで表示する側で、何も書き戻さない（データの二重保存をしない）
@@ -166,6 +167,8 @@ CSS = """
   .err { font-size:13px; color:var(--red); font-weight:700; }
   .warnline { font-size:13px; color:var(--warn); font-weight:700; }
   .empty { font-size:13px; color:var(--sub); }
+  .example-band { font-size:12.5px; color:var(--warn); background:#fdf3d0; border:1px solid #f1e2a6;
+                  border-radius:6px; padding:6px 10px; margin:0 0 12px; }
   .lane { display:grid; gap:10px; grid-template-columns:repeat(5, 1fr); margin-bottom:8px; }
   @media (max-width:999px){ .lane { grid-template-columns:repeat(2, 1fr); } }
   .lane-col { background:#fff; border:1px solid var(--line); border-radius:10px; padding:8px 10px; min-height:60px; }
@@ -260,7 +263,7 @@ def release_lane_html(cards, today):
             f'<div class="lane">{col_html}</div>')
 
 
-def render(cards, errors, today, source_name):
+def render(cards, errors, today, source_name, example=False):
     counts = {s: sum(1 for c in cards if c["shelf"] == s) for s in SHELVES}
     week_ago = date.fromordinal(today.toordinal() - 7).isoformat()
 
@@ -355,6 +358,8 @@ def render(cards, errors, today, source_name):
         err_html = f'<h2>書式エラー <span class="cnt">{len(errors)}</span></h2>\n{lines}'
 
     uchiwake = " / ".join(f"{s}{counts[s]}" for s in SHELVES)
+    band = (f'<p class="example-band">これは記入例です。候補はすべて架空です（{esc(source_name)}）</p>\n'
+            if example else "")
     return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -367,7 +372,7 @@ def render(cards, errors, today, source_name):
 <style>{CSS}</style>
 </head>
 <body>
-<p class="gen">候補 {len(cards)}件（生成: {today.isoformat()}）</p>
+{band}<p class="gen">候補 {len(cards)}件（生成: {today.isoformat()}）</p>
 <p class="gen-note">棚別内訳: {esc(uchiwake)}。正本は {esc(source_name)}（このページは閲覧専用）。</p>
 <p class="tane">今週の種: 新規{n_new}件・変化{n_upd}件</p>
 {release_lane_html(cards, today)}
@@ -384,6 +389,8 @@ def main():
     ap.add_argument("-o", "--out", default=None, help="出力HTML（既定: ネタ帳と同じ場所の candidates.html）")
     ap.add_argument("--today", default=None, help="基準日 YYYY-MM-DD（既定: 今日。記入例を固定日で描くとき用）")
     ap.add_argument("--check", action="store_true", help="HTMLを書かず、件数と書式エラーだけ表示")
+    ap.add_argument("--example", action="store_true",
+                    help="最上部に「これは記入例です」の帯を出す（見本HTMLを作るとき用）")
     a = ap.parse_args()
 
     src = Path(a.neta)
@@ -405,7 +412,7 @@ def main():
         return 0
 
     out = Path(a.out) if a.out else src.with_name("candidates.html")
-    out.write_text(render(cards, errors, today, src.name), encoding="utf-8")
+    out.write_text(render(cards, errors, today, src.name, example=a.example), encoding="utf-8")
     print(f"生成: {out}")
     return 0
 
