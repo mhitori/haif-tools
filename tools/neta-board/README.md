@@ -1,7 +1,7 @@
-# 候補管理ボード
+# ネタ帳ボード
 
-ぼくが自分の候補管理に使っているものです。記入例は架空で、実測は記事のほうにあります。
-制作記: [AIに反対されたが、半日で作った](https://hitori-ai-factory.com/jitsuroku/built-despite-ai-objection/)（柱A #04）
+ぼくが自分の候補管理に使っているものです（ぼくの内部では候補管理ボードと呼んでいます）。記入例は架空で、実測は記事のほうにあります。
+制作記: [AIに反対されたが、半日で作った](https://hitori-ai-factory.com/jitsuroku/built-despite-ai-objection/)（実録 #04）
 
 「作れそうなもの」を、出所つきのカードで1画面に並べるボードです。
 ネタ帳（Markdown 1ファイル）を読んで、HTML 1枚を生成します。
@@ -11,15 +11,15 @@
 
 | ファイル | 役割 |
 |---|---|
-| `candidates_board.py` | 生成スクリプト。Python 3 の標準ライブラリだけで動きます（追加インストール・ネット接続なし） |
+| `neta_board.py` | 生成スクリプト。Python 3 の標準ライブラリだけで動きます（追加インストール・ネット接続なし） |
 | `neta_example.md` | 記入例のネタ帳。カード5枚と、わざと書式を崩した行を入れてあり、ボードの表示状態が全部出ます |
-| `candidates_example.html` | 記入例から生成した見本のボード |
+| `neta_board_example.html` | 記入例から生成した見本のボード |
 | `README.md` | このファイル |
 
 ## 使い方
 
 ```
-python3 candidates_board.py neta_example.md --today 2026-09-07 --example
+python3 neta_board.py neta_example.md --today 2026-09-07 --example
 ```
 
 `neta_example.md` と同じ場所に `candidates.html` ができるので、ブラウザで開きます。
@@ -27,7 +27,7 @@ python3 candidates_board.py neta_example.md --today 2026-09-07 --example
 自分のネタ帳で使うときは、ファイル名を渡すだけです。
 
 ```
-python3 candidates_board.py 自分のネタ帳.md -o 出力先.html
+python3 neta_board.py 自分のネタ帳.md -o 出力先.html
 ```
 
 `--today` は基準日の指定です。省略すると今日になります。記入例は 2026-09 を前提に書いてあるので、日付を固定して描くと説明どおりの表示になります。

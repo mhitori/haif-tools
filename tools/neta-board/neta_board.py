@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""候補管理ボード ── ネタ帳（Markdown 1ファイル）を読んで、候補カードを1枚のHTMLに並べる。
+"""ネタ帳ボード ── ネタ帳（Markdown 1ファイル）を読んで、候補カードを1枚のHTMLに並べる。
 
 これだけで動きます（Python 3 標準ライブラリのみ・追加インストール不要・ネット接続不要）。
 
-    python3 candidates_board.py                       # ./neta.md → ./candidates.html
-    python3 candidates_board.py 自分のネタ帳.md -o 出力.html
-    python3 candidates_board.py neta_example.md --today 2026-09-07   # 記入例を固定日で描く
-    python3 candidates_board.py neta_example.md --today 2026-09-07 --example   # 上部に「記入例」の帯を出す
+    python3 neta_board.py                       # ./neta.md → ./candidates.html
+    python3 neta_board.py 自分のネタ帳.md -o 出力.html
+    python3 neta_board.py neta_example.md --today 2026-09-07   # 記入例を固定日で描く
+    python3 neta_board.py neta_example.md --today 2026-09-07 --example   # 上部に「記入例」の帯を出す
 
 決めごと（このボードが守っていること）:
   - 正本はネタ帳の .md だけ。ボードは読んで表示する側で、何も書き戻さない（データの二重保存をしない）
@@ -30,7 +30,7 @@ SHELVES = ["提案", "在庫", "済み", "没ネタ"]
 MARK = "【プロダクト候補】"
 # カード内で読む項目（未知のキーも「キー: 値」なら落とさず保持する）
 FIELD_KEYS = ["説明", "段階", "出所", "形", "層", "評価", "枠該当", "備考", "記帳", "素材",
-              "履歴", "使用", "一言", "柱", "解放予定", "一体記事", "記事状況", "理由"]
+              "履歴", "使用", "一言", "解放予定", "一体記事", "記事状況", "理由"]
 STAGES = ["提案中", "議論中", "承認済み", "着手", "公開済み", "見送り"]
 DATE_RE = re.compile(r"(\d{4})-(\d{2})-(\d{2})|(\d{1,2})/(\d{1,2})")
 
@@ -366,8 +366,8 @@ def render(cards, errors, today, source_name, example=False):
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>候補管理ボード</title>
-<!-- 生成: candidates_board.py（閲覧専用・書き込みなし）。正本はネタ帳の .md。
+<title>ネタ帳ボード</title>
+<!-- 生成: neta_board.py（閲覧専用・書き込みなし）。正本はネタ帳の .md。
      このページはパーサで読んで表示するだけ（候補データの二重保存はしない）。○×はネタ帳側で -->
 <style>{CSS}</style>
 </head>
@@ -384,7 +384,7 @@ def render(cards, errors, today, source_name, example=False):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="ネタ帳（.md）から候補管理ボード（.html）を生成")
+    ap = argparse.ArgumentParser(description="ネタ帳（.md）からネタ帳ボード（.html）を生成")
     ap.add_argument("neta", nargs="?", default="neta.md", help="ネタ帳のMarkdown（既定: ./neta.md）")
     ap.add_argument("-o", "--out", default=None, help="出力HTML（既定: ネタ帳と同じ場所の candidates.html）")
     ap.add_argument("--today", default=None, help="基準日 YYYY-MM-DD（既定: 今日。記入例を固定日で描くとき用）")

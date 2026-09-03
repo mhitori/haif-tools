@@ -12,7 +12,7 @@
 
 | 道具 | 何をするか | 一体の記事 |
 |---|---|---|
-| [candidates-board](tools/candidates-board/) | ネタ帳（Markdown 1ファイル）を読んで、候補管理ボード（HTML 1枚）を生成する | [AIに反対されたが、半日で作った](https://hitori-ai-factory.com/jitsuroku/built-despite-ai-objection/) |
+| [neta-board](tools/neta-board/) | ネタ帳（Markdown 1ファイル）を読んで、ネタ帳ボード（HTML 1枚）を生成する | [AIに反対されたが、半日で作った](https://hitori-ai-factory.com/jitsuroku/built-despite-ai-objection/) |
 
 ## 共通の前提
 
