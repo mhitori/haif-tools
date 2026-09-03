@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>候補管理ボード</title>
+<!-- 生成: candidates_board.py（閲覧専用・書き込みなし）。正本はネタ帳の .md。
+     このページはパーサで読んで表示するだけ（候補データの二重保存はしない）。○×はネタ帳側で -->
+<style>
+  :root { --yellow:#f5c94f; --ink:#1f1f1f; --sub:#5f5f59; --line:#e5e2d9; --bg:#faf9f5;
+           --warn:#8a6d1a; --red:#a32c12; --ok:#2f5d46; }
+  * { box-sizing:border-box; }
+  body { font-family:"Helvetica Neue","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;
+         background:var(--bg); color:var(--ink); margin:0; padding:20px 16px 64px;
+         max-width:640px; margin-inline:auto; line-height:1.7; }
+  @media (min-width:1000px){ body { max-width:1160px; } }
+  .gen { font-size:26px; font-weight:800; margin:0 0 2px; }
+  .gen-note { font-size:12px; color:var(--sub); margin:0 0 6px; }
+  h2 { font-size:15px; font-weight:800; border-left:4px solid var(--yellow); padding-left:8px;
+       margin:26px 0 10px; display:flex; align-items:center; gap:8px; }
+  h2 .cnt { font-size:12px; background:#efece3; color:var(--sub); border-radius:10px; padding:1px 8px; }
+  .grid { display:grid; gap:14px; grid-template-columns:1fr; margin-bottom:8px; }
+  @media (min-width:1000px){ .grid { grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); } }
+  .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin:0; }
+  .card.violation { border:2px solid var(--red); }
+  .card.no-desc { border:2px solid var(--yellow); }
+  .waitlabel { font-size:10.5px; color:var(--sub); letter-spacing:0.06em; margin:0 0 2px; }
+  .title { font-size:15px; font-weight:800; margin:0 0 2px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .title .no { color:var(--sub); font-weight:700; }
+  .desc { font-size:13.5px; font-weight:500; margin:0 0 6px; }
+  .field { font-size:13px; margin:2px 0; }
+  .field b { font-weight:700; color:var(--sub); font-size:12px; margin-right:4px; }
+  .hist { font-size:12.5px; margin:2px 0 2px 0.5em; color:var(--ink); }
+  .hist::before { content:"・"; color:var(--sub); }
+  .badge { font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; white-space:nowrap; }
+  .badge.new { background:var(--yellow); }
+  .badge.upd { background:#fdf3d0; color:var(--warn); }
+  .ev { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 4px; }
+  .ev span { font-size:11px; padding:2px 7px; border-radius:4px; background:#efece3; color:var(--sub); white-space:nowrap; }
+  .ev .m-ok { background:#e3ede7; color:var(--ok); }
+  .ev .m-mid { background:#fdf3d0; color:var(--warn); }
+  .ev .m-low { background:#eee; color:var(--sub); }
+  .qmark { cursor:help; border-bottom:1px dotted var(--sub); }
+  details { margin-top:6px; }
+  details summary { font-size:12px; color:var(--sub); cursor:pointer; user-select:none; }
+  .tane { font-size:15px; font-weight:700; margin:0 0 14px; }
+  .err { font-size:13px; color:var(--red); font-weight:700; }
+  .warnline { font-size:13px; color:var(--warn); font-weight:700; }
+  .empty { font-size:13px; color:var(--sub); }
+  .lane { display:grid; gap:10px; grid-template-columns:repeat(5, 1fr); margin-bottom:8px; }
+  @media (max-width:999px){ .lane { grid-template-columns:repeat(2, 1fr); } }
+  .lane-col { background:#fff; border:1px solid var(--line); border-radius:10px; padding:8px 10px; min-height:60px; }
+  .lane-head { font-size:12px; font-weight:800; color:var(--sub); margin:0 0 6px; letter-spacing:0.04em; }
+  .fuda { display:block; font-size:12.5px; font-weight:700; color:var(--ink); text-decoration:none;
+          background:#faf9f5; border:1px solid var(--line); border-left:4px solid var(--yellow);
+          border-radius:6px; padding:6px 8px; margin:0 0 6px; }
+  .fuda .fno { color:var(--sub); font-weight:700; margin-right:2px; }
+  .fuda .fst { display:block; font-size:11px; font-weight:500; color:var(--sub); margin-top:2px; }
+  .fuda .fnote { display:block; font-size:10.5px; font-weight:400; color:var(--sub); }
+  .fuda.done { border-left-color:var(--ok); }
+  .fuda.done .fst { color:var(--ok); }
+  .fuda.late { border:2px solid var(--red); border-left:4px solid var(--red); }
+  .fuda.late .fst { color:var(--red); font-weight:700; }
+</style>
+</head>
+<body>
+<p class="gen">候補 6件（生成: 2026-09-07）</p>
+<p class="gen-note">棚別内訳: 提案3 / 在庫1 / 済み1 / 没ネタ1。正本は neta_example.md（このページは閲覧専用）。</p>
+<p class="tane">今週の種: 新規1件・変化1件</p>
+<h2>解放計画 <span class="cnt">5</span></h2><p class="gen-note">列=解放予定（当月から3ヶ月＋未定）。札=順番・道具名・一体記事の準備状況（ネタ帳の「記事状況」欄）。予定月を過ぎて未公開は赤。正本はネタ帳のカード。</p><div class="lane"><div class="lane-col"><p class="lane-head">2026-09</p><a class="fuda done" href="#c25"><span class="fno">#1</span> 家計簿CSVの整形（銀行3行分をひとつの表に）<span class="fst">公開済み</span></a></div><div class="lane-col"><p class="lane-head">2026-10</p><a class="fuda" href="#c41"><span class="fno">#2</span> 読書メモの整理（読んだ順ではなく「問い」の順に並べ直す）<span class="fst">下書き</span></a></div><div class="lane-col"><p class="lane-head">2026-11</p><p class="empty">なし</p></div><div class="lane-col"><p class="lane-head">2026-12</p><p class="empty">なし</p></div><div class="lane-col"><p class="lane-head">未定</p><a class="fuda" href="#c55"><span class="fno">#3</span> 請求書PDFの命名<span class="fst">一体記事なし</span><span class="fnote">未定</span></a><a class="fuda late" href="#c67"><span class="fno">#4</span> 読書メモの引用カード化（1冊1枚の画像にする）<span class="fst">未着手</span></a><a class="fuda done" href="#c85"><span class="fno">#5</span> 家計簿の集計表テンプレート（月ごとの固定費・変動費）<span class="fst">一体記事なし</span></a></div></div>
+<h2>書式エラー <span class="cnt">1</span></h2>
+<p class="err">L109 [没ネタ] 仮タイトル行の書式外: - 【プロダクト候補】請求書の宛名チェック（思いつき・まだ何も確かめていない）</p>
+<h2>提案（判定待ち） <span class="cnt">3</span></h2>
+<div class="grid"><div class="card" id="c25"><p class="waitlabel">判定待ち ── ○×は人が決める（番号で指定）</p><p class="title"><span class="no">#1</span> 家計簿CSVの整形（銀行3行分をひとつの表に） <span class="badge" style="background:#e3ede7;color:var(--ok)">着手</span><span class="badge upd">更新</span></p><p class="desc">銀行ごとに列の順や日付の書き方が違うCSVを、毎月ひとつの表にそろえる小さな道具</p><p class="field"><b>出所</b>毎月1日に3行のCSVを開いて列を並べ替える作業に40分かかり、7月は日付の形式を直し忘れて集計がずれた（2026-08-01）</p><div class="ev"><span class="m-ok">解く問題は1つか ○</span><span class="m-ok">実例を付けて配れるか ○</span><span class="m-ok">配った後の手間 ○</span><span class="m-ok qmark" title="自分で決めた「出す商品の条件」（例: 自分が使っている実物・低価格・サポート不要）に当てはまるか">狙う枠に当たるか? ○</span></div><p class="field"><b>形</b>ツール <span class="badge" style="background:#efece3;color:var(--sub)">無料</span></p><details><summary>詳細</summary><p class="field"><b>評価の理由</b>1問題1商品=○（「列をそろえる」だけ）</p><p class="field"><b>評価の理由</b>記入例・実測の同梱=○（自分の3行分の実例と、40分→3分の実測）</p><p class="field"><b>評価の理由</b>サポート負荷=低（ブラウザで完結）</p><p class="field"><b>記帳</b>自分: 2026-08-20</p><p class="field"><b>素材</b>8月分のCSV（口座番号はマスク）・所要時間のメモ</p><p class="field"><b>解放予定</b>2026-09</p><p class="field"><b>一体記事</b>家計簿CSVを毎月手で直すのをやめた話</p><p class="field"><b>記事状況</b>公開済み</p><p class="field"><b>履歴</b></p><p class="hist">2026-08-25 まず自分の3行だけ動くものを作った（実働1時間）</p><p class="hist">2026-09-01 9月分で初めて本番使用。3分で終わった。記事を公開</p></details></div><div class="card" id="c41"><p class="waitlabel">判定待ち ── ○×は人が決める（番号で指定）</p><p class="title"><span class="no">#2</span> 読書メモの整理（読んだ順ではなく「問い」の順に並べ直す） <span class="badge" style="background:#efece3;color:var(--sub)">提案中</span></p><p class="desc">読んだ日付順にたまった読書メモに「その本が答えた問い」をつけて、問いごとに引き出せるようにする指示書</p><p class="field"><b>出所</b>引用したい一節を探すのに、読んだ日付を思い出せず30分さかのぼった（2026-08-27）</p><div class="ev"><span class="m-ok">解く問題は1つか ○</span><span class="m-ok">実例を付けて配れるか ○</span><span class="m-ok">配った後の手間 ○</span><span class="m-ok qmark" title="自分で決めた「出す商品の条件」（例: 自分が使っている実物・低価格・サポート不要）に当てはまるか">狙う枠に当たるか? ○</span></div><p class="field"><b>形</b>指示書・テンプレート <span class="badge" style="background:#efece3;color:var(--sub)">無料</span></p><details><summary>詳細</summary><p class="field"><b>評価の理由</b>1問題1商品=○（「探せない」だけを解く）</p><p class="field"><b>評価の理由</b>記入例・実測の同梱=○（自分のメモ300件で試した結果）</p><p class="field"><b>評価の理由</b>サポート負荷=低</p><p class="field"><b>記帳</b>自分: 2026-08-28</p><p class="field"><b>素材</b>読書メモの原本・「問い」の付け方を試した記録</p><p class="field"><b>解放予定</b>2026-10</p><p class="field"><b>一体記事</b>読書メモが300件を超えて探せなくなった話</p><p class="field"><b>記事状況</b>下書き</p></details></div><div class="card no-desc" id="c55"><p class="waitlabel">判定待ち ── ○×は人が決める（番号で指定）</p><p class="title"><span class="no">#3</span> 請求書PDFの命名 <span class="badge" style="background:#fdf3d0;color:var(--warn)">議論中</span><span class="badge new">NEW</span></p><p class="warnline">説明なし ── 「誰の何をどうするものか」を1行で書く</p><p class="field"><b>出所</b>「請求書.pdf」が5つ並んで、どれが誰宛か開くまで分からなかった（2026-09-02）</p><div class="ev"><span class="m-ok">解く問題は1つか ○</span><span class="m-mid">実例を付けて配れるか △</span><span class="m-mid">配った後の手間 △</span><span class=" qmark" title="自分で決めた「出す商品の条件」（例: 自分が使っている実物・低価格・サポート不要）に当てはまるか">狙う枠に当たるか? △</span></div><p class="field"><b>形</b>ツール <span class="badge" style="background:#efece3;color:var(--sub)">無料</span></p><details><summary>詳細</summary><p class="field"><b>評価の理由</b>1問題1商品=○</p><p class="field"><b>評価の理由</b>記入例・実測の同梱=△（まだ自分の分でしか試していない）</p><p class="field"><b>評価の理由</b>サポート負荷=中（PDFの中身の読み取りが相手先で違う）</p><p class="field"><b>記帳</b>自分: 2026-09-02</p><p class="field"><b>解放予定</b>未定</p></details></div></div>
+<h2>在庫（○済み） <span class="cnt">1</span></h2>
+<div class="grid"><div class="card violation" id="c67"><p class="title"><span class="no">#4</span> 読書メモの引用カード化（1冊1枚の画像にする） <span class="badge" style="background:#e3ede7;color:var(--ok)">承認済み</span></p><p class="desc">読書メモの引用と自分の一言を、1冊につき1枚の正方形の画像にする道具</p><p class="err">入口条件違反（出所なし）── 出所を書くか棚から外す</p><div class="ev"><span class="m-ok">解く問題は1つか ○</span><span class="m-mid">実例を付けて配れるか △</span><span class="m-ok">配った後の手間 ○</span><span class="m-low qmark" title="自分で決めた「出す商品の条件」（例: 自分が使っている実物・低価格・サポート不要）に当てはまるか">狙う枠に当たるか? ×</span></div><p class="field"><b>形</b>ツール <span class="badge" style="background:#efece3;color:var(--sub)">無料</span></p><details><summary>詳細</summary><p class="field"><b>評価の理由</b>1問題1商品=○</p><p class="field"><b>評価の理由</b>記入例・実測の同梱=△</p><p class="field"><b>評価の理由</b>サポート負荷=低</p><p class="field"><b>記帳</b>自分: 2026-07-30</p><p class="field"><b>解放予定</b>2026-08</p><p class="field"><b>一体記事</b>読書メモを画像にして残す</p><p class="field"><b>記事状況</b>未着手</p><p class="field"><b>履歴</b></p><p class="hist">2026-08-15 予定月を8月にしたまま着手できていない</p></details></div></div>
+<h2>済み <span class="cnt">1</span></h2>
+<div class="grid"><div class="card" id="c85"><p class="title"><span class="no">#5</span> 家計簿の集計表テンプレート（月ごとの固定費・変動費） <span class="badge" style="background:#2f5d46;color:#fff">公開済み</span></p><p class="desc">固定費と変動費を分けて月ごとに並べるだけの表</p><p class="field"><b>出所</b>毎月同じ表を作り直していた（2026-06-01）</p><div class="ev"><span class="m-ok">解く問題は1つか ○</span><span class="m-ok">実例を付けて配れるか ○</span><span class="m-ok">配った後の手間 ○</span><span class="m-ok qmark" title="自分で決めた「出す商品の条件」（例: 自分が使っている実物・低価格・サポート不要）に当てはまるか">狙う枠に当たるか? ○</span></div><p class="field"><b>形</b>テンプレート <span class="badge" style="background:#efece3;color:var(--sub)">無料</span></p><details><summary>詳細</summary><p class="field"><b>評価の理由</b>1問題1商品=○</p><p class="field"><b>評価の理由</b>記入例・実測の同梱=○</p><p class="field"><b>評価の理由</b>サポート負荷=低</p><p class="field"><b>記帳</b>自分: 2026-06-10</p><p class="field"><b>使用</b>2026-07-05 公開（記事「毎月同じ表を作り直すのをやめた」と一緒に）</p></details></div></div>
+<h2>没ネタ <span class="cnt">1</span></h2>
+<div class="grid"><div class="card" id="c98"><p class="title"><span class="no">#6</span> 家計簿の月次グラフ（支出の推移を折れ線に） <span class="badge" style="background:#eee;color:var(--sub);text-decoration:line-through">見送り</span></p><p class="desc">月ごとの支出をグラフにして眺める道具</p><p class="field"><b>出所</b>集計表を作ったあと「グラフも欲しい」と思った（2026-08-10）</p><div class="ev"><span class="m-low">解く問題は1つか ×</span><span class="m-low">実例を付けて配れるか ×</span><span class="m-ok">配った後の手間 ○</span><span class="m-low qmark" title="自分で決めた「出す商品の条件」（例: 自分が使っている実物・低価格・サポート不要）に当てはまるか">狙う枠に当たるか? ×</span></div><p class="field"><b>形</b>ツール <span class="badge" style="background:#efece3;color:var(--sub)">無料</span></p><details><summary>詳細</summary><p class="field"><b>評価の理由</b>1問題1商品=×（眺めたい、は問題ではない）</p><p class="field"><b>評価の理由</b>記入例・実測の同梱=×</p><p class="field"><b>評価の理由</b>サポート負荷=低</p><p class="field"><b>記帳</b>自分: 2026-08-10</p><p class="field"><b>理由</b>2026-08-17 表計算ソフトのグラフ機能で足りた。作る理由がない</p></details></div></div>
+</body>
+</html>

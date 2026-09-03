@@ -1,0 +1,9 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# 各道具が生成する出力（見本の candidates_example.html は追跡する）
+tools/*/candidates.html
