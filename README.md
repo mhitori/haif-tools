@@ -13,6 +13,7 @@
 | 道具 | 何をするか | 一体の記事 |
 |---|---|---|
 | [neta-board](tools/neta-board/) | ネタ帳（Markdown 1ファイル）を読んで、ネタ帳ボード（HTML 1枚）を生成する | [AIに反対されたが、半日で作った](https://hitori-ai-factory.com/jitsuroku/built-despite-ai-objection/) |
+| [code-brief](tools/code-brief/) | チャットのAI（決める役）とコードを書くAI（作る役）に、それぞれ1回貼るだけの決まり2本 | [決める役と作る役を、なぜ分けているか](https://hitori-ai-factory.com/tsukaikata/code-brief-01/) |
 
 ## 共通の前提
 
