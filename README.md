@@ -14,10 +14,11 @@
 |---|---|---|
 | [neta-board](tools/neta-board/) | ネタ帳（Markdown 1ファイル）を読んで、ネタ帳ボード（HTML 1枚）を生成する | [AIに反対されたが、半日で作った](https://hitori-ai-factory.com/jitsuroku/built-despite-ai-objection/) |
 | [code-brief](tools/code-brief/) | チャットのAI（決める役）とコードを書くAI（作る役）に、それぞれ1回貼るだけの決まり2本 | [決める役と作る役を、なぜ分けているか](https://hitori-ai-factory.com/tsukaikata/code-brief-01/) |
+| [x-board-v1](tools/x-board-v1/) | X投稿の下書きをカードで並べ、本文をコピーしてXに貼り、投稿したら「投稿済みにする」で送る（HTML 1枚・保存はブラウザの中だけ） | [下書きの置き場──X投稿の管理を、HTML1枚で作った日](https://hitori-ai-factory.com/rensai/shitagaki-no-okiba/) |
 
 ## 共通の前提
 
-- Python 3 の標準ライブラリだけで動くように作っています。追加のインストールと、ネットへの接続は不要です
+- Python 3 の標準ライブラリだけ、または HTML 1枚で動くように作っています。追加のインストールと、ネットへの接続は不要です
 - 道具は自分のPCの中で動きます。入力したファイルをどこにも送信しません
 
 ## 問い合わせ

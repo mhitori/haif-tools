@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>X投稿ボード（下書きの置き場）</title>
+<style>
+  :root { --yellow:#f5c94f; --ink:#1f1f1f; --sub:#5f5f59; --line:#e5e2d9; --bg:#faf9f5; }
+  * { box-sizing:border-box; }
+  body { font-family:"Helvetica Neue","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;
+         background:var(--bg); color:var(--ink); margin:0; padding:20px 16px 64px;
+         max-width:640px; margin-inline:auto; line-height:1.7; }
+  h1 { font-size:20px; font-weight:800; margin:0; display:flex; align-items:center; gap:8px; }
+  h1::before { content:""; width:12px; height:12px; background:var(--yellow); border-radius:3px; }
+  .lead { font-size:12px; color:var(--sub); margin:4px 0 16px; }
+  h2 { font-size:15px; font-weight:800; border-left:4px solid var(--yellow); padding-left:8px;
+       margin:26px 0 10px; display:flex; align-items:center; gap:8px; }
+  h2 .cnt { font-size:12px; background:#efece3; color:var(--sub); border-radius:10px; padding:1px 8px; }
+  h2 .tgl { font-size:12px; color:var(--sub); font-weight:400; cursor:pointer; text-decoration:underline; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:14px 14px 10px; margin-bottom:12px; }
+  .meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
+  .type { background:var(--yellow); font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; }
+  .ttl { font-size:13px; font-weight:700; }
+  .date { font-size:11px; color:var(--sub); }
+  .body { white-space:pre-wrap; font-size:14px; margin:4px 0 8px; }
+  .note { font-size:12px; color:var(--sub); margin:0 0 8px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; }
+  button { font-size:13px; padding:8px 12px; border-radius:6px; border:1px solid #d7d3c7;
+           background:#fff; color:var(--ink); cursor:pointer; }
+  button.pri { background:var(--yellow); border-color:var(--yellow); font-weight:700; }
+  button.danger { color:#993c1d; }
+  textarea, input, select { width:100%; font-size:14px; font-family:inherit; line-height:1.7;
+           border:1px solid #d7d3c7; border-radius:6px; padding:8px; }
+  select { width:auto; }
+  .addbox { background:#fff; border:1px dashed #d7d3c7; border-radius:10px; padding:14px; margin-bottom:20px; }
+  .addbox > * + * { margin-top:8px; }
+  .toolbar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+  .empty { font-size:13px; color:var(--sub); }
+  .toast { position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
+           background:var(--ink); color:#fff; font-size:13px; padding:8px 16px;
+           border-radius:20px; opacity:0; transition:opacity .2s; pointer-events:none; }
+  .toast.show { opacity:1; }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+<h1>X投稿ボード</h1>
+<p class="lead">X投稿の下書きをカードで並べ、コピーして投稿したら「投稿済みにする」。データはこのブラウザの中にだけ保存されます（別の端末には同期されません）。</p>
+
+<div class="toolbar">
+  <button id="btnWeekly">週次報告をコピー</button>
+  <button id="btnAdd">＋ 新しい投稿案</button>
+  <button id="btnBackup">バックアップをコピー</button>
+  <button id="btnRestore">バックアップから復元</button>
+</div>
+
+<div id="addBox" class="addbox hidden">
+  <input id="newTitle" placeholder="見出し（例: DBを作った話）">
+  <select id="newType">
+    <option>実況</option><option>報告</option><option>解説</option><option>問い</option>
+  </select>
+  <textarea id="newText" rows="5" placeholder="投稿文（下書きでOK）"></textarea>
+  <button class="pri" id="btnCommitAdd">棚に追加</button>
+</div>
+
+<div id="restoreBox" class="addbox hidden">
+  <textarea id="restoreText" rows="4" placeholder="バックアップ文字列を貼り付けて「復元する」"></textarea>
+  <button class="pri" id="btnCommitRestore">復元する（現在のデータを上書き）</button>
+</div>
+
+<h2>次に投稿 <span class="cnt" id="cQueue"></span></h2>
+<div id="secQueue"></div>
+
+<h2>棚（下書き） <span class="cnt" id="cStock"></span></h2>
+<div id="secStock"></div>
+
+<h2>投稿済み <span class="cnt" id="cDone"></span> <span class="tgl" id="tglDone">開く</span></h2>
+<div id="secDone" class="hidden"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = "xboard-v1";   // ブラウザ内の保存キー。変えると別の置き場になる
+const SEED = [
+ {id:"p1",type:"実況",title:"記入例1（消してよい）",status:"queue",note:"画像を添える",
+  text:"昨日、家計簿のCSVを整形する小さな道具を作りました。\n列の順番を揃えるだけのもの。\n30分で動いて、今朝から使っています。"},
+ {id:"p2",type:"報告",title:"記入例2（消してよい）",status:"stock",note:"",
+  text:"今週の実測: 道具を作った回数 2回、動かなくなった回数 1回。\n止まった原因は、入力ファイルの文字コードでした。"}
+];
+let posts, editingId = null;
+function load(){ try{ posts = JSON.parse(localStorage.getItem(KEY)) || SEED; }catch(e){ posts = SEED; } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(posts)); }catch(e){ toast("保存に失敗しました"); } render(); }
+function jst(){ return new Date(Date.now()+9*3600*1000).toISOString().slice(0,10); }
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),1500); }
+function copyText(s, msg){
+  const ok=()=>toast(msg||"コピーしました");
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(s).then(ok).catch(()=>fb(s,ok)); }
+  else fb(s,ok);
+}
+function fb(s,ok){ const ta=document.createElement("textarea"); ta.value=s; document.body.appendChild(ta);
+  ta.select(); try{ document.execCommand("copy"); ok(); }catch(e){ toast("コピーできませんでした"); }
+  document.body.removeChild(ta); }
+function esc(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function card(p){
+  const d=document.createElement("div"); d.className="card";
+  if(editingId===p.id){
+    d.innerHTML=`<div class="meta"><span class="type">${esc(p.type)}</span><span class="ttl">${esc(p.title)}</span></div>
+      <textarea rows="6" id="editTa">${esc(p.text)}</textarea>
+      <div class="row" style="margin-top:8px">
+        <button class="pri" data-act="saveEdit">保存</button>
+        <button data-act="cancelEdit">やめる</button></div>`;
+  } else {
+    d.innerHTML=`<div class="meta"><span class="type">${esc(p.type)}</span><span class="ttl">${esc(p.title)}</span>
+      ${p.doneAt?`<span class="date">投稿日 ${p.doneAt}</span>`:""}</div>
+      <p class="body">${esc(p.text)}</p>
+      ${p.note?`<p class="note">※ ${esc(p.note)}</p>`:""}
+      <div class="row">
+        <button class="pri" data-act="copy">本文をコピー</button>
+        ${p.status!=="done"?`<button data-act="done">投稿済みにする</button>`:""}
+        ${p.status==="stock"?`<button data-act="toQueue">次に投稿へ</button>`:""}
+        ${p.status==="queue"?`<button data-act="toStock">棚へ戻す</button>`:""}
+        ${p.status==="done"?`<button data-act="unDone">棚に戻す</button>`:""}
+        <button data-act="edit">編集</button>
+        <button class="danger" data-act="del">削除</button>
+      </div>`;
+  }
+  d.addEventListener("click",e=>{
+    const act=e.target.dataset&&e.target.dataset.act; if(!act) return;
+    if(act==="copy") copyText(p.text);
+    if(act==="done"){ p.status="done"; p.doneAt=jst(); save(); }
+    if(act==="unDone"){ p.status="stock"; delete p.doneAt; save(); }
+    if(act==="toQueue"){ p.status="queue"; save(); }
+    if(act==="toStock"){ p.status="stock"; save(); }
+    if(act==="edit"){ editingId=p.id; render(); }
+    if(act==="cancelEdit"){ editingId=null; render(); }
+    if(act==="saveEdit"){ p.text=d.querySelector("#editTa").value; editingId=null; save(); }
+    if(act==="del"){ if(confirm("このカードを削除しますか？")){ posts=posts.filter(x=>x.id!==p.id); save(); } }
+  });
+  return d;
+}
+function render(){
+  const q=posts.filter(p=>p.status==="queue"), s=posts.filter(p=>p.status==="stock"), dn=posts.filter(p=>p.status==="done");
+  const fill=(id,arr,emptyMsg)=>{ const el=document.getElementById(id); el.innerHTML="";
+    if(!arr.length){ el.innerHTML=`<p class="empty">${emptyMsg}</p>`; } else arr.forEach(p=>el.appendChild(card(p))); };
+  fill("secQueue",q,"なし。「＋ 新しい投稿案」で追加するか、棚のカードを「次に投稿へ」。");
+  fill("secStock",s,"空です。「＋ 新しい投稿案」で追加。");
+  fill("secDone",dn,"まだありません。投稿したカードで「投稿済みにする」を押すとここに移ります。");
+  document.getElementById("cQueue").textContent=q.length;
+  document.getElementById("cStock").textContent=s.length;
+  document.getElementById("cDone").textContent=dn.length;
+}
+document.getElementById("btnWeekly").onclick=()=>{
+  const dn=posts.filter(p=>p.status==="done"), rest=posts.filter(p=>p.status!=="done");
+  copyText(["【X投稿 週次報告】"+jst(),
+    "投稿済み: "+(dn.length?dn.map(p=>`${p.doneAt||""} ${p.title}`).join("／"):"なし"),
+    "残在庫: "+rest.map(p=>p.title).join("／")].join("\n"),"週次報告をコピーしました");
+};
+document.getElementById("btnAdd").onclick=()=>{ document.getElementById("addBox").classList.toggle("hidden"); };
+document.getElementById("btnCommitAdd").onclick=()=>{
+  const t=document.getElementById("newText").value.trim(); if(!t) return;
+  posts.push({ id:"p"+Date.now(), type:document.getElementById("newType").value,
+    title:(document.getElementById("newTitle").value.trim()||"（無題）"), status:"stock", note:"", text:t });
+  document.getElementById("newText").value=""; document.getElementById("newTitle").value="";
+  document.getElementById("addBox").classList.add("hidden"); save(); toast("棚に追加しました");
+};
+document.getElementById("btnBackup").onclick=()=>copyText(JSON.stringify(posts),"バックアップをコピーしました（メモ帳等に保存を）");
+document.getElementById("btnRestore").onclick=()=>document.getElementById("restoreBox").classList.toggle("hidden");
+document.getElementById("btnCommitRestore").onclick=()=>{
+  try{ const d=JSON.parse(document.getElementById("restoreText").value); if(!Array.isArray(d)) throw 0;
+    posts=d; save(); document.getElementById("restoreBox").classList.add("hidden"); toast("復元しました");
+  }catch(e){ toast("復元できません。バックアップ文字列を確認してください"); }
+};
+document.getElementById("tglDone").onclick=e=>{
+  const sec=document.getElementById("secDone"); sec.classList.toggle("hidden");
+  e.target.textContent=sec.classList.contains("hidden")?"開く":"閉じる";
+};
+load(); render();
+</script>
+</body>
+</html>
