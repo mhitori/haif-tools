@@ -16,7 +16,7 @@
 ## 記事（全4本）
 
 - ① [決める役と作る役を、なぜ分けているか](https://hitori-ai-factory.com/tsukaikata/code-brief-01/)
-- ② 決める側の決まり ── 近日
+- ② [決める側の決まり](https://hitori-ai-factory.com/tsukaikata/code-brief-02/)
 - ③ 作る側の決まり ── 近日
 - ④ ぼくの1日の使い方 ── 近日
 
