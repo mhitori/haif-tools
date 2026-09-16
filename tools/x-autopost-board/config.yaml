@@ -1,0 +1,49 @@
+# X自動投稿ボード一式 の設定（このファイル1つ）
+# 書式: 2スペースのインデント・文字列は二重引用符・コメントは行頭の # だけ（行の途中のコメントは使えない）
+# 値の入っていない項目は、あなたの環境に合わせて埋める。ここにある値はすべて空欄かサンプル
+
+version: 1
+
+# --- アカウント ---
+# handle: X のアカウント名（@ なし）。リポジトリに書きたくなければ空欄のままにして、環境変数 X_HANDLE で渡す
+account:
+  handle: ""
+
+# --- 時刻 ---
+# utc_offset_hours: 表示と日付の判定に使う時間帯（日本時間なら 9）
+# post_time: ボードに出す定時の目安（表示用。実際の起動時刻はワークフローの cron で決まる）
+schedule:
+  utc_offset_hours: 9
+  post_time: "07:00"
+
+# --- 投稿 ---
+# live: "true" のときだけ、定時実行が実際に X へ投稿する（既定は "false" で、投稿せず記録だけ）
+post:
+  live: "false"
+
+# --- 支出の上限と単価（米ドル。単価は見積もり値。X API の料金は各自で確認して書き換える） ---
+spend:
+  monthly_limit_usd: 20
+  cost_per_read_usd: "0.005"
+  cost_per_post_usd: "0.015"
+  cost_per_post_with_url_usd: "0.20"
+
+# --- 記事区画（任意） ---
+# articles_dir: 記事の Markdown を置いたフォルダ（front matter に title と date がある .md）。空欄なら記事区画は出さない
+# article_url: 記事のURLの組み立て規則。{dir} はサブフォルダ名、{slug} はファイル名（拡張子なし）
+# 下の値はサンプル（sample/articles の架空の記事）
+articles:
+  articles_dir: "sample/articles"
+  article_url: "https://example.com/{dir}/{slug}/"
+
+# --- ファイルの置き場（このフォルダからの相対パス） ---
+paths:
+  shelf: "data/shelf.json"
+  shelf_registered: "data/shelf_registered.jsonl"
+  post_log: "data/post_log.jsonl"
+  own_posts: "data/own_posts.json"
+  profile: "data/profile_metrics.jsonl"
+  receipt: "data/run_receipt.jsonl"
+  spend: "data/spend.json"
+  work: "data/work"
+  board: "board/index.html"

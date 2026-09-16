@@ -1,0 +1,119 @@
+# X自動投稿ボード一式: 毎朝の定時実行（取り込み→投稿→ボード更新→受領票→ボード更新→コミット）
+# このファイルは、リポジトリの .github/workflows/ に置いて使う。キットのフォルダをリポジトリの直下に置いた前提で書いている
+# （別の場所に置いた場合は KIT_DIR を書き換える）。
+# Secrets（リポジトリの Settings → Secrets and variables → Actions）に5つ登録する:
+#   X_BEARER_TOKEN（取り込み用・読み取り）
+#   X_API_KEY・X_API_SECRET・X_ACCESS_TOKEN・X_ACCESS_TOKEN_SECRET（投稿用・OAuth 1.0a）
+# アカウント名を config.yaml に書かない場合は、Variables に X_HANDLE を登録する。
+# 実際に投稿するのは config.yaml の post.live が "true" のときだけ（既定は投稿しない試運転）。
+name: x-board-daily
+
+on:
+  schedule:
+    # 分・時は UTC。「47 21 * * *」は日本時間 06:47。毎時0分ちょうどは混みやすいので端数の分にしている
+    - cron: "47 21 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "投稿を試運転にする（true なら config の post.live を無視して送らない）"
+        type: choice
+        options: ["true", "false"]
+        default: "true"
+      offline:
+        description: "取り込みで X API を呼ばない（true なら手元の台帳で照合だけ。Secrets を登録する前の試運転用）"
+        type: choice
+        options: ["false", "true"]
+        default: "false"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: x-board-daily
+  cancel-in-progress: false
+
+env:
+  LANG: C.UTF-8
+  LC_ALL: C.UTF-8
+  PYTHONIOENCODING: utf-8
+  KIT_DIR: x-autopost-board
+  X_HANDLE: ${{ vars.X_HANDLE }}
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 開始時刻（受領票用）
+        id: t0
+        run: echo "started=$(date +%FT%T%z)" >> "$GITHUB_OUTPUT"
+
+      - name: 取り込み（自分の投稿を台帳へ・手で出した投稿を棚と照合）。失敗したら投稿まで止まる
+        id: own_posts
+        env:
+          X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.offline }}" = "true" ]; then
+            python3 "$KIT_DIR/scripts/own_posts.py" --offline
+          else
+            python3 "$KIT_DIR/scripts/own_posts.py"
+          fi
+
+      - name: 投稿（config の post.live で本番／試運転を切り替え）
+        id: post
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+        run: |
+          LIVE=$(python3 -c "import sys; sys.path.insert(0, '$KIT_DIR/scripts'); from common import section; print(str(section('post').get('live', 'false')).lower())")
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then LIVE="false"; echo "手動起動の dry_run=true のため送らない"; fi
+          if [ "$LIVE" = "true" ]; then
+            python3 "$KIT_DIR/scripts/post.py" --live
+          else
+            python3 "$KIT_DIR/scripts/post.py" --dry-run
+          fi
+
+      - name: ボード更新（投稿の結果を反映。投稿が失敗・0本でも動かす）
+        id: board
+        if: always()
+        run: python3 "$KIT_DIR/scripts/board.py"
+
+      - name: 受領票（各工程の成否を1行。失敗時も書く）
+        id: receipt
+        if: always()
+        env:
+          RUN_ID: ${{ github.run_id }}
+          RUN_NUMBER: ${{ github.run_number }}
+          EVENT: ${{ github.event_name }}
+          STARTED: ${{ steps.t0.outputs.started }}
+        run: |
+          python3 "$KIT_DIR/scripts/receipt.py" \
+            --step "own_posts=${{ steps.own_posts.outcome }}" \
+            --step "post=${{ steps.post.outcome }}" \
+            --step "board=${{ steps.board.outcome }}"
+
+      - name: ボード更新（受領票を「今朝の実行」行に出す）
+        if: always()
+        run: python3 "$KIT_DIR/scripts/board.py" || echo "::warning::受領票のあとのボード更新に失敗"
+
+      - name: コミットとpush（失敗時も走らせ、できた分と受領票を残す）
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # data/work/（作業用の中間ファイル）はコミットしない（キットの .gitignore にも入れてある）
+          git add -- "$KIT_DIR/data" "$KIT_DIR/board" ":(exclude)$KIT_DIR/data/work"
+          if git diff --cached --quiet; then
+            echo "変更なし（コミットしない）"
+            exit 0
+          fi
+          git commit -m "x-board: 毎朝の定時実行（取り込み・投稿・ボード・受領票）"
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+          git push || { git pull --rebase --autostash origin "${GITHUB_REF_NAME}"; git push; }
