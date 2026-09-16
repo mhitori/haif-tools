@@ -109,7 +109,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # data/work/（作業用の中間ファイル）はコミットしない（キットの .gitignore にも入れてある）
-          git add -- "$KIT_DIR/data" "$KIT_DIR/board" ":(exclude)$KIT_DIR/data/work"
+          git add -- "$KIT_DIR/data" "$KIT_DIR/board"
           if git diff --cached --quiet; then
             echo "変更なし（コミットしない）"
             exit 0
