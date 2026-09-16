@@ -18,7 +18,7 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import KIT_ROOT, now_jst, path, section   # noqa: E402
+from common import KIT_ROOT, TZ, now_jst, path, section   # noqa: E402
 
 STATUS_JA = {"draft": "下書き（承認待ち）", "approved": "承認済み", "posted": "投稿済み",
              "skipped": "見送り", "expired": "失効（予定日超過）",
@@ -38,18 +38,39 @@ def load_jsonl(p):
     return [json.loads(l) for l in p.read_text(encoding="utf-8").splitlines() if l.strip()]
 
 
+def to_local(value):
+    """受領票の時刻（ISO形式。+0000・+09:00・Z のどれでも）を config.yaml の時間帯（utc_offset_hours）に直す。
+    時間帯の無い時刻は設定の時間帯とみなす。読めなければ None。"""
+    s = str(value or "").strip().replace("Z", "+00:00")
+    m = re.match(r"^(.*[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?[+-]\d{2})(\d{2})$", s)
+    if m:   # +0000 の形（date +%z の出力）を +00:00 に
+        s = f"{m.group(1)}:{m.group(2)}"
+    try:
+        d = datetime.fromisoformat(s)
+    except ValueError:
+        return None
+    if d.tzinfo is None:
+        d = d.replace(tzinfo=TZ)
+    return d.astimezone(TZ)
+
+
 def receipt_line(today, rows, gen):
     """「今朝の実行」行。当日の受領票の最後の行があれば、日付・開始時刻と各工程の成否。無ければ「未実行」。
+    当日かどうかと開始時刻は、受領票の時刻を config.yaml の時間帯に直してから判定する（受領票が UTC で書かれていてもよい）。
     どちらも末尾にボードの生成時刻を付ける（実行が動かなかった日はボードも作り直されず、前の日の行が残るため）。
     戻り値: (css class, 本文)。"""
     tail = f"｜このボードの生成 {gen}"
+
+    def started_local(r):
+        return to_local(r.get("started_at")) or to_local(r.get("ts"))
+
     todays = [r for r in rows if r.get("event") in EVENT_JA
-              and str(r.get("started_at") or r.get("ts") or "")[:10] == today]
+              and started_local(r) is not None and started_local(r).date().isoformat() == today]
     if not todays:
         return "warn", f"{today} 未実行（当日の受領票が無い）{tail}"
     r = todays[-1]
     steps = r.get("steps") or {}
-    started = str(r.get("started_at") or r.get("ts") or "")[11:16]
+    started = started_local(r).strftime("%H:%M")
     parts = [f"{STEP_NAME.get(k, k)} {STEP_JA.get(v, v if v else '記録なし')}" for k, v in steps.items()]
     ok = bool(steps) and all(v == "success" for v in steps.values())
     return ("ok" if ok else "err"), (f"{today} {started} 開始（{EVENT_JA.get(r.get('event'), r.get('event'))}・受領票 #{r.get('run_number', '—')}）｜"
