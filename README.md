@@ -1,5 +1,7 @@
 # haif-tools
 
+A public set of tools that a non-engineer built with AI and uses daily; the build records are on hitori-ai-factory.com.
+
 ひとりAIファクトリーで、ぼくが自分の運用に使っている道具を置いていく場所です。
 道具はサイトの記事と一体で公開します。記事には、その道具を作った経緯と実測を書いています。
 

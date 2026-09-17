@@ -1,5 +1,7 @@
 # X投稿ボード v1（静的・HTML1枚）
 
+A single HTML file that lists X (Twitter) post drafts as cards for copying and marking as posted; data is stored only in the browser.
+
 X投稿の下書きをカードで並べ、本文をコピーしてXに貼り、投稿したら「投稿済みにする」で送る。それだけの道具です。
 画面も動きも保存も、HTMLファイル1枚の中で完結します。サーバーも登録もありません。データはこのファイルを開いたブラウザの中（localStorage）にだけ保存されます。
 

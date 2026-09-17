@@ -1,5 +1,7 @@
 # X自動投稿ボード一式 v1.0
 
+A kit that posts approved X (Twitter) drafts on schedule with GitHub Actions and records each morning's run on an HTML board.
+
 承認したX投稿を予定日の朝に出し、その記録を毎朝ボード（HTML 1枚）にまとめる仕組み一式です。
 GitHub の非公開リポジトリに置き、Actions の定時実行で毎朝1周します。ぼくが自分の運用で毎朝動かしているものから、公開できる範囲を切り出しました。
 

@@ -1,5 +1,7 @@
 # Code指示書の型
 
+Two rule texts, each pasted once into a conversational AI that decides and a coding AI that builds, for keeping those two roles apart.
+
 チャットのAIに「決める役」、コードを書くAIに「作る役」を分けて使うための、貼って効く決まり2本です。決める側に貼る `chat_side.md` と、作る側の `CLAUDE.md` に貼る `claude_md_block.md` の2ファイルで、テンプレートや記入例はありません。
 
 ## 使い方

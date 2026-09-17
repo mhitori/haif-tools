@@ -1,5 +1,7 @@
 # ネタ帳ボード
 
+Generates a single HTML board of idea cards from one Markdown notebook, using only the Python 3 standard library.
+
 ぼくが自分の候補管理に使っているものです（ぼくの内部では候補管理ボードと呼んでいます）。記入例は架空で、実測は記事のほうにあります。
 制作記: [AIに反対されたが、半日で作った](https://hitori-ai-factory.com/jitsuroku/built-despite-ai-objection/)（実録 #04）
 
