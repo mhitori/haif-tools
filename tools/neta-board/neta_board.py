@@ -378,6 +378,7 @@ def render(cards, errors, today, source_name, example=False):
 {release_lane_html(cards, today)}
 {err_html}
 {chr(10).join(sections)}
+<footer style="font-size:11px;color:#8a8a84;text-align:right;margin:32px 0 0">作: ひとりAIファクトリー <a href="https://hitori-ai-factory.com/" style="color:inherit">hitori-ai-factory.com</a></footer>
 </body>
 </html>
 """

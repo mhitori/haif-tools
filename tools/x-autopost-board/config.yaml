@@ -21,6 +21,11 @@ schedule:
 post:
   live: "false"
 
+# --- ボードの表示 ---
+# show_credit: "true" のとき、ボードの最下部右に出典の1行を出す。"false" にすると出さない
+board:
+  show_credit: "true"
+
 # --- 支出の上限と単価（米ドル。単価は見積もり値。X API の料金は各自で確認して書き換える） ---
 spend:
   monthly_limit_usd: 20

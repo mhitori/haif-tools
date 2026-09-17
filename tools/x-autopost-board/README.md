@@ -67,6 +67,7 @@ GitHub の非公開リポジトリに置き、Actions の定時実行で毎朝1�
 - `post.live`: 最初は `"false"` のまま（投稿せず、出す予定を記録するだけ）
 - `spend`: 月の上限と単価（米ドル）。上限を超える見込みの読み取りと投稿は、実行しないで止まります
 - `articles`: 記事区画を使わないなら、2つとも空欄にします。見本のままだと、架空の記事3本が区画に出ます
+- `board.show_credit`: ボードの最下部右に出す出典の1行（作: ひとりAIファクトリー hitori-ai-factory.com）。`"false"` にすると出しません
 
 ### 3. Secrets を5つ登録する
 
@@ -133,6 +134,10 @@ python3 scripts/run_local.py     # 取り込み（API なし）→投稿（試�
 
 - 連載第2弾 第6話（この一式の話）: [X投稿を自動化した──HTML1枚から37日](https://hitori-ai-factory.com/rensai/x-autopost-37days/)
 - 連載第2弾 第1話: [下書きの置き場──X投稿の管理を、HTML1枚で作った日](https://hitori-ai-factory.com/rensai/shitagaki-no-okiba/)
+
+## 変更履歴
+
+- v1.0.1（2026-09-17）: 出典の1行を追加。動作の変更なし
 
 ## 提供条件
 

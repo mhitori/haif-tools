@@ -26,6 +26,8 @@ STATUS_JA = {"draft": "下書き（承認待ち）", "approved": "承認済み",
 STEP_JA = {"success": "成功", "failure": "失敗", "cancelled": "中止", "skipped": "飛ばし"}
 STEP_NAME = {"own_posts": "取り込み", "post": "投稿", "board": "ボード更新", "receipt": "受領票"}
 EVENT_JA = {"schedule": "定時", "workflow_dispatch": "手動起動", "local": "手元の試運転"}
+# 出典の1行（ボードの最下部右）。config.yaml の board.show_credit が "false" なら出さない（v1.0.1）
+CREDIT_HTML = '<footer style="font-size:11px;color:#8a8a84;text-align:right;margin:32px 0 0">作: ひとりAIファクトリー <a href="https://hitori-ai-factory.com/" style="color:inherit">hitori-ai-factory.com</a></footer>'
 
 
 def esc(s):
@@ -212,6 +214,7 @@ def main():
         run_html = '<p class="warn">当日の投稿の実行なし</p>'
 
     gen = now.strftime("%Y-%m-%d %H:%M")
+    credit_html = "" if str(section("board").get("show_credit", "true")).strip().lower() == "false" else CREDIT_HTML
     receipt_cls, receipt_text = receipt_line(today, load_jsonl(path("receipt")), gen)
     spend_cls = "err" if spend_red else "ok"
     article_legend = ('<li><span class="tag ok-tag">告知済み</span> <span class="tag warn">承認待ち</span> <span class="tag dup">未告知</span> 「記事」の区画の印。'
@@ -312,6 +315,7 @@ def main():
 
 {sections_html}
 
+{credit_html}
 <div class="toast" id="toast"></div>
 <script>
 function cp(btn){{
