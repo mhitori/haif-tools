@@ -2,17 +2,17 @@
 
 A public set of tools that a non-engineer built with AI and uses daily; the build records are on hitori-ai-factory.com.
 
-ひとりAIファクトリーで、ぼくが自分の運用に使っている道具を置いていく場所です。
-道具はサイトの記事と一体で公開します。記事には、その道具を作った経緯と実測を書いています。
+ひとりAIファクトリーで、ぼくが自分の運用に使っているツールを置いていく場所です。
+ツールはサイトの記事と一体で公開します。記事には、そのツールを作った経緯と実測を書いています。
 
 - サイト: https://hitori-ai-factory.com/
-- 道具は `tools/<道具名>/` に1つずつ。それぞれの README に使い方と、ぼくが詰まったところを書いています
+- ツールは `tools/<ツール名>/` に1つずつ。それぞれの README に使い方と、ぼくが詰まったところを書いています
 - 記入例は架空のものです。実測は記事のほうにあります
 - 動作や成果の保証はしません。自分の環境で確かめてから使ってください
 
-## 道具一覧
+## ツール一覧
 
-| 道具 | 何をするか | 一体の記事 |
+| ツール | 何をするか | 一体の記事 |
 |---|---|---|
 | [neta-board](tools/neta-board/) | ネタ帳（Markdown 1ファイル）を読んで、ネタ帳ボード（HTML 1枚）を生成する | [AIに反対されたが、半日で作った](https://hitori-ai-factory.com/jitsuroku/built-despite-ai-objection/) |
 | [code-brief](tools/code-brief/) | チャットのAI（決める役）とコードを書くAI（作る役）に、それぞれ1回貼るだけの決まり2本 | [決める役と作る役を、なぜ分けているか](https://hitori-ai-factory.com/tsukaikata/code-brief-01/) |
@@ -22,7 +22,7 @@ A public set of tools that a non-engineer built with AI and uses daily; the buil
 ## 共通の前提
 
 - Python 3 の標準ライブラリだけ、または HTML 1枚で動くように作っています。追加のインストールは不要です
-- 道具は自分のPCの中で動きます。入力したファイルをどこにも送信しません。例外は x-autopost-board で、GitHub Actions の上で動き、X API に接続します
+- ツールは自分のPCの中で動きます。入力したファイルをどこにも送信しません。例外は x-autopost-board で、GitHub Actions の上で動き、X API に接続します
 
 ## 問い合わせ
 

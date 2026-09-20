@@ -84,9 +84,9 @@
 const KEY = "xboard-v1";   // ブラウザ内の保存キー。変えると別の置き場になる
 const SEED = [
  {id:"p1",type:"実況",title:"記入例1（消してよい）",status:"queue",note:"画像を添える",
-  text:"昨日、家計簿のCSVを整形する小さな道具を作りました。\n列の順番を揃えるだけのもの。\n30分で動いて、今朝から使っています。"},
+  text:"昨日、家計簿のCSVを整形する小さなツールを作りました。\n列の順番を揃えるだけのもの。\n30分で動いて、今朝から使っています。"},
  {id:"p2",type:"報告",title:"記入例2（消してよい）",status:"stock",note:"",
-  text:"今週の実測: 道具を作った回数 2回、動かなくなった回数 1回。\n止まった原因は、入力ファイルの文字コードでした。"}
+  text:"今週の実測: ツールを作った回数 2回、動かなくなった回数 1回。\n止まった原因は、入力ファイルの文字コードでした。"}
 ];
 let posts, editingId = null;
 function load(){ try{ posts = JSON.parse(localStorage.getItem(KEY)) || SEED; }catch(e){ posts = SEED; } }

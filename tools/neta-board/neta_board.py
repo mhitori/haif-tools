@@ -231,7 +231,7 @@ def release_status(card):
 
 
 def release_lane_html(cards, today):
-    """公開計画レーン: 当月から3ヶ月＋未定の列に、順番・道具名・一体記事の準備状況の札を並べる。"""
+    """公開計画レーン: 当月から3ヶ月＋未定の列に、順番・ツール名・一体記事の準備状況の札を並べる。"""
     months = []
     y, mth = today.year, today.month
     for _ in range(4):
@@ -261,7 +261,7 @@ def release_lane_html(cards, today):
         items = "".join(cols[key]) or '<p class="empty">なし</p>'
         col_html += f'<div class="lane-col"><p class="lane-head">{esc(key)}</p>{items}</div>'
     return (f'<h2>公開計画 <span class="cnt">{sum(len(v) for v in cols.values())}</span></h2>'
-            f'<p class="gen-note">列=公開予定（当月から3ヶ月＋未定）。札=順番・道具名・一体記事の準備状況'
+            f'<p class="gen-note">列=公開予定（当月から3ヶ月＋未定）。札=順番・ツール名・一体記事の準備状況'
             f'（ネタ帳の「記事状況」欄）。予定月を過ぎて未公開は赤。正本はネタ帳のカード。</p>'
             f'<div class="lane">{col_html}</div>')
 
