@@ -30,7 +30,7 @@ SHELVES = ["提案", "在庫", "済み", "没ネタ"]
 MARK = "【プロダクト候補】"
 # カード内で読む項目（未知のキーも「キー: 値」なら落とさず保持する）
 FIELD_KEYS = ["説明", "段階", "出所", "形", "層", "評価", "枠該当", "備考", "記帳", "素材",
-              "履歴", "使用", "一言", "解放予定", "一体記事", "記事状況", "理由"]
+              "履歴", "使用", "一言", "公開予定", "一体記事", "記事状況", "理由"]
 STAGES = ["提案中", "議論中", "承認済み", "着手", "公開済み", "見送り"]
 DATE_RE = re.compile(r"(\d{4})-(\d{2})-(\d{2})|(\d{1,2})/(\d{1,2})")
 
@@ -228,7 +228,7 @@ def release_status(card):
 
 
 def release_lane_html(cards, today):
-    """解放計画レーン: 当月から3ヶ月＋未定の列に、順番・道具名・一体記事の準備状況の札を並べる。"""
+    """公開計画レーン: 当月から3ヶ月＋未定の列に、順番・道具名・一体記事の準備状況の札を並べる。"""
     months = []
     y, mth = today.year, today.month
     for _ in range(4):
@@ -242,7 +242,7 @@ def release_lane_html(cards, today):
     for c in sorted(cards, key=lambda x: x.get("_no", 999)):
         if c["shelf"] == "没ネタ":
             continue
-        plan = c["fields"].get("解放予定", "").strip()
+        plan = c["fields"].get("公開予定", "").strip()
         m = re.match(r"(\d{4}-\d{2})", plan)
         month = m.group(1) if m else "未定"
         status, done = release_status(c)
@@ -257,8 +257,8 @@ def release_lane_html(cards, today):
     for key in months + ["未定"]:
         items = "".join(cols[key]) or '<p class="empty">なし</p>'
         col_html += f'<div class="lane-col"><p class="lane-head">{esc(key)}</p>{items}</div>'
-    return (f'<h2>解放計画 <span class="cnt">{sum(len(v) for v in cols.values())}</span></h2>'
-            f'<p class="gen-note">列=解放予定（当月から3ヶ月＋未定）。札=順番・道具名・一体記事の準備状況'
+    return (f'<h2>公開計画 <span class="cnt">{sum(len(v) for v in cols.values())}</span></h2>'
+            f'<p class="gen-note">列=公開予定（当月から3ヶ月＋未定）。札=順番・道具名・一体記事の準備状況'
             f'（ネタ帳の「記事状況」欄）。予定月を過ぎて未公開は赤。正本はネタ帳のカード。</p>'
             f'<div class="lane">{col_html}</div>')
 
