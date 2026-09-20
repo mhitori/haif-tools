@@ -31,6 +31,8 @@ MARK = "【プロダクト候補】"
 # カード内で読む項目（未知のキーも「キー: 値」なら落とさず保持する）
 FIELD_KEYS = ["説明", "段階", "出所", "形", "層", "評価", "枠該当", "備考", "記帳", "素材",
               "履歴", "使用", "一言", "公開予定", "一体記事", "記事状況", "理由"]
+# 旧表記の読み替え（2026-09-20: 「解放予定:」で書いたネタ帳もそのまま読めるようにする）
+FIELD_ALIASES = {"解放予定": "公開予定"}
 STAGES = ["提案中", "議論中", "承認済み", "着手", "公開済み", "見送り"]
 DATE_RE = re.compile(r"(\d{4})-(\d{2})-(\d{2})|(\d{1,2})/(\d{1,2})")
 
@@ -107,8 +109,9 @@ def parse(path):
             m = re.match(r"([^:：]{1,12})[:：]\s*(.*)$", body)
             if m and m.group(1).strip() == "履歴":
                 cur["history"].append(m.group(2).strip())   # 追記式・複数行
-            elif m and m.group(1).strip() in FIELD_KEYS:
-                cur["fields"][m.group(1).strip()] = m.group(2).strip()
+            elif m and FIELD_ALIASES.get(m.group(1).strip(), m.group(1).strip()) in FIELD_KEYS:
+                key = FIELD_ALIASES.get(m.group(1).strip(), m.group(1).strip())   # 旧表記は読み替える
+                cur["fields"][key] = m.group(2).strip()
             elif m and re.match(r"^[\w一-龠ぁ-んァ-ヶ・]+$", m.group(1).strip()):
                 cur["fields"][m.group(1).strip()] = m.group(2).strip()   # 未知のキーも保持
             else:
