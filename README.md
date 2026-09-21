@@ -23,7 +23,7 @@ A public set of tools that a non-engineer built with AI and uses daily; the buil
 ## 共通の前提
 
 - Python 3 の標準ライブラリだけ、または HTML 1枚で動くように作っています。追加のインストールは不要です
-- session-brief は Markdown のファイルだけで、動かすプログラムはありません
+- code-brief と session-brief は Markdown のファイルだけで、動くプログラムはありません
 - ツールは自分のPCの中で動きます。入力したファイルをどこにも送信しません。例外は x-autopost-board で、GitHub Actions の上で動き、X API に接続します
 
 ## 問い合わせ
