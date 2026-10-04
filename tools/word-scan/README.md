@@ -52,7 +52,7 @@ Scans a git repository's commits to be pushed and its files for words you listed
 AI に公開物を書かせたり push させたりするときは、AI への指示（CLAUDE.md など）に次の1行を入れておきます。
 
 ```
-公開するもの（push する差分・投稿・送る文面）は、出す前に word_scan.py で検査し、ヒット0件を確かめる。当たったら出さずに直し、もう一度検査する。
+公開するリポジトリに push する前に、word_scan.py で push する差分とリポジトリの今の中身（--tree）を検査し、ヒット0件を確かめる。当たったら push せずに直し、もう一度検査する。
 ```
 
 ## 用意するもの
