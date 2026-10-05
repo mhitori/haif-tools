@@ -7,7 +7,7 @@ Scans a git repository's commits to be pushed and its files for words you listed
 ## 入れるもの
 - 検査するリポジトリのフォルダ（`--repo`）
 - 検査語のファイル（`--words`・書き方は下の「検査語のファイルの書き方」）
-- 任意: push する差分の範囲（`--range`・既定は `origin/main..HEAD`）
+- 任意: push する差分の範囲（`--range`・既定は `origin/main..HEAD`。`origin/main` が無いときは全部のコミット）
 
 ## 見るもの
 - push する差分: コミットごとに、見出しと本文・著者とコミッターの名前とアドレス・足した行・新しいファイルの名前・名前を変えた先
