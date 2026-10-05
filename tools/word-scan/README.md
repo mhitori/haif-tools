@@ -81,7 +81,7 @@ AI に公開物を書かせたり push させたりするときは、AI への�
 - README.md            この説明
 
 ## 一体の記事
-（公開の日に記事の URL を入れる）
+https://hitori-ai-factory.com/jitsuroku/word-scan-eight-stops/
 
 ## 提供条件
 MIT License。動作や成果を保証するものではありません。

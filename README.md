@@ -20,6 +20,7 @@ A public set of tools that a non-engineer built with AI and uses daily; the buil
 | [x-autopost-board](tools/x-autopost-board/) | 承認したX投稿を予定日の朝に出し、前日までの投稿の記録・ボード（HTML 1枚）の更新・毎朝の実行の記録までを、GitHub の非公開リポジトリの定時実行で回す（X API を使う） | [X投稿を自動化した──HTML1枚から37日](https://hitori-ai-factory.com/rensai/x-autopost-37days/) |
 | [session-brief](tools/session-brief/) | 決める側のAI（チャット）にその日の最後に「準備票」を1枚書かせ、翌朝の新しいチャットの先頭に貼るための型（Markdown 3ファイル） | [AIは前の日を覚えていない。だから毎朝、決める側のAIに1枚貼る](https://hitori-ai-factory.com/tsukaikata/code-brief-04/) |
 | [note_export](tools/note_export/) | note転載キット。サイトの記事の md を1本入れると、note に貼る直前までの5つ（本文・表の画像・図の写し・見出し画像・貼る手順書）を出す | [note転載キットを公開します](https://hitori-ai-factory.com/jitsuroku/note-kit/) |
+| [word-scan](tools/word-scan/) | 出したくない語スキャン。公開するリポジトリに push する前に、出したくない語（名前・メールアドレス・ホームフォルダ名など）が入っていないかを検査する | [出したくない語スキャンを公開します](https://hitori-ai-factory.com/jitsuroku/word-scan-eight-stops/) |
 
 ## 共通の前提
 
