@@ -21,15 +21,17 @@
 
 使い方:
     python3 word_scan.py --repo ~/projects/my-tools --words my_words.txt                # 差分（origin/main..HEAD）だけ
+      origin/main が無いとき（まだ push したことのないリポジトリ）は、HEAD までの全部のコミットを差分として見る
     python3 word_scan.py --repo ~/projects/my-tools --words my_words.txt --tree         # 差分＋今の中身
     python3 word_scan.py --repo ~/projects/my-tools --words my_words.txt --known もぐら町
       --known 語: その語は件数だけ出す（直すまでの既知の件数として、合計と終了コードに数えない）
-終了コード: ヒットが1件でもあれば 1、無ければ 0（--known の語は数えない）
+終了コード: ヒットが1件でもあれば 1、無ければ 0（--known の語は数えない）。検査できなかったときは 2
 作: ひとりAIファクトリー hitori-ai-factory.com（MIT License）
 """
 
 import argparse
 import collections
+import os
 import re
 import subprocess
 import sys
@@ -116,6 +118,33 @@ def git(repo, *args):
                           capture_output=True, text=True, check=True).stdout
 
 
+def git_ok(repo, *args):
+    """git が通るか（失敗しても落とさない）。範囲やブランチがあるかを確かめるのに使う。"""
+    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True).returncode == 0
+
+
+def pick_range(repo, given, tree):
+    """検査する差分の範囲を返す。差分を見ないときは None、検査できないときは 2 を返す。"""
+    if given:
+        # 指定された範囲が無いときは、全部の検査に切り替えずに止める
+        if not git_ok(repo, "log", "-1", "--format=%h", given, "--"):
+            print(f"--range の範囲「{given}」が見つからないので、検査できません。名前を確かめてください")
+            return 2
+        return given
+    if not git_ok(repo, "rev-parse", "--verify", "-q", "HEAD"):
+        if not tree:
+            print("コミットが1つも無いので、push する差分は検査できません。今の中身を見るときは --tree を付けてください")
+            return 2
+        print("コミットが1つも無いので、push する差分の検査は飛ばして、今の中身だけを検査します")
+        return None
+    if git_ok(repo, "rev-parse", "--verify", "-q", "origin/main"):
+        return "origin/main..HEAD"
+    # まだ push したことのないリポジトリ。差分を飛ばすと著者のアドレスと見出しを見ないので、全部を差分として見る
+    n = git(repo, "rev-list", "--count", "HEAD").strip()
+    print(f"origin/main が無いので、全部のコミット（{n}個）を push する差分として検査します。範囲を決めるときは --range を使ってください")
+    return "HEAD"
+
+
 def print_table(title, result, known):
     print(f"\n## {title}\n")
     print("| 検査語 | ヒット数 | 実物（最大5件） |")
@@ -136,7 +165,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--repo", required=True, help="検査するリポジトリのフォルダ")
     ap.add_argument("--words", required=True, help="検査語のファイル（書き方は上の説明）")
-    ap.add_argument("--range", default="origin/main..HEAD", help="push する差分の範囲（既定 origin/main..HEAD）")
+    ap.add_argument("--range", default=None,
+                    help="push する差分の範囲（既定 origin/main..HEAD。origin/main が無いときは HEAD までの全部）")
     ap.add_argument("--tree", action="store_true", help="今の中身（git ls-files の全ファイル）も検査する")
     ap.add_argument("--known", action="append", default=[], help="件数だけ出す既知の語（複数可）")
     a = ap.parse_args()
@@ -144,14 +174,27 @@ def main():
     terms, allow, allow_lines = load_words(Path(a.words).expanduser())
     total = 0
 
-    commits = git(repo, "log", "--format=%h", a.range).split()
+    # 検査できないときは、Python のエラーを出さずに1行で知らせて終了コード 2
+    try:
+        inside = git_ok(repo, "rev-parse", "--git-dir") if os.path.isdir(repo) else False
+    except FileNotFoundError:
+        print("git が見つからないので、検査できません。git を入れてから走らせてください")
+        return 2
+    if not inside:
+        print(f"{a.repo} は git のリポジトリではないので、検査できません。--repo を確かめてください")
+        return 2
+    rng = pick_range(repo, a.range, a.tree)
+    if rng == 2:
+        return 2
+
+    commits = git(repo, "log", "--format=%h", rng, "--").split() if rng else []
     for c in commits:
         patch = git(repo, "show", "--format=commit %h%nAuthor: %an <%ae>%nCommitter: %cn <%ce>%n%n%B", "-p", c)
         lines = added_lines(patch)
         total += print_table(f"コミット {c}（見出し・本文と足した行・{len(lines)}行）",
                              scan(lines, terms, allow, allow_lines), a.known)
-    if not commits:
-        print(f"\n## push する差分: {a.range} にコミットなし")
+    if rng and not commits:
+        print(f"\n## push する差分: {rng} にコミットなし")
 
     if a.tree:
         lines = []
