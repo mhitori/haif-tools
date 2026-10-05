@@ -23,7 +23,7 @@ Scans a git repository's commits to be pushed and its files for words you listed
 1. `words_example.txt` を写して、自分の出したくない語に書き換える（例: `my_words.txt`）。このファイルは、公開するリポジトリの外に置く
 2. push の前に走らせる
    `python3 word_scan.py --repo ~/projects/my-tools --words ~/private/my_words.txt --tree`
-   まだ push したことのないリポジトリ（`origin/main` が無いとき）では、全部のコミットを検査する
+   （まだ push したことのないリポジトリ〈`origin/main` が無いとき〉では、全部のコミットを検査する）
 3. 当たったら、表の実物を見て直す。公開してよいものに当たったときは、下の「逃がし方」で外す。もう一度走らせて、ヒット合計 0 を確かめてから push する
 
 ## 検査語のファイルの書き方
@@ -66,7 +66,7 @@ AI に公開物を書かせたり push させたりするときは、AI への�
 - ホームフォルダ名は、実行した PC のものだけを見る。ほかの PC のホームフォルダ名は、検査語のファイルに書かないと見つけない
 - 確かめた環境は macOS（Python 3.9・git 2.54）だけ。Windows と Linux では確かめていない
 - 当たった箇所は直さない。push を自動で止める設定も入っていない（手で走らせる）
-- 既定で見るのは、今いるブランチの `origin/main` より先のコミットだけ。ほかのブランチやタグは `--range` で指定する
+- 既定で見るのは、今いるブランチの `origin/main` より先のコミットだけ（`origin/main` が無いときは全部）。ほかのブランチやタグは `--range` で指定する
 - ホームフォルダ名が短い語や一般的な語だと、関係のない所にも多く当たる
 
 ## 内部版から外したもの
