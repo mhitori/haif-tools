@@ -25,7 +25,11 @@
     python3 word_scan.py --repo ~/projects/my-tools --words my_words.txt --tree         # 差分＋今の中身
     python3 word_scan.py --repo ~/projects/my-tools --words my_words.txt --known もぐら町
       --known 語: その語は件数だけ出す（直すまでの既知の件数として、合計と終了コードに数えない）
+      語は、検査語のファイルに書いた行（i:Kumokumo・re:式・@EMAIL）でも、表の「検査語」の列の名前（Kumokumo・メールアドレス）でもよい
+      どの検査語にも合わないときは、1行で知らせて、既知にせずに数える（最後の行の「既知 … を除く」には、受けた語だけを出す）
 終了コード: ヒットが1件でもあれば 1、無ければ 0（--known の語は数えない）。検査できなかったときは 2
+  --tree で、今の中身に検査できるファイル（git が追っていて UTF-8 で読めるもの）が1つも無いときも 2（git add のし忘れなど）。
+  そのときも、コミットに当たりがあれば 1
 作: ひとりAIファクトリー hitori-ai-factory.com（MIT License）
 """
 
@@ -68,6 +72,20 @@ def load_words(path):
         else:
             terms.append((line, re.compile(re.escape(line)), False))
     return terms, allow, allow_lines
+
+
+def known_spellings(path):
+    """--known の書き方の表 {書き方: {表示名}} を返す。検査語のファイルの行（i:語・re:式・@EMAIL）と
+    表の「検査語」の列の名前（語・メールアドレス）の、どちらの書き方でも同じ検査語に当てる。
+    load_words と同じ順に検査語の行を読み、load_words が作った表示名と組にする（load_words の返す値は変えない）"""
+    terms = load_words(path)[0]
+    rows = [r.strip() for r in path.read_text(encoding="utf-8").splitlines()]
+    rows = [r for r in rows if r and not r.startswith("#") and not r.startswith(("allow-email:", "allow-line:"))]
+    spell = collections.defaultdict(set)
+    for line, (name, _, _) in zip(rows, terms):
+        for k in (line, name, name.replace("|", "／"), line[3:] if line.startswith("re:") else line):
+            spell[k].add(name)   # ファイルの行・表の名前・| を ／ にした形・re: を外した式
+    return spell
 
 
 def is_allowed_line(loc, text, allow_lines):
@@ -172,6 +190,14 @@ def main():
     a = ap.parse_args()
     repo = Path(a.repo).expanduser()
     terms, allow, allow_lines = load_words(Path(a.words).expanduser())
+    spell = known_spellings(Path(a.words).expanduser())
+    known, taken = set(), []   # 既知にする表示名と、受けた --known の値
+    for k in a.known:
+        if k.strip() in spell:
+            known |= spell[k.strip()]
+            taken.append(k)
+        else:
+            print(f"--known の「{k}」は、どの検査語にも合わないので、既知にせずに数えます（検査語のファイルの行か、表の「検査語」の列の名前を書く）")
     total = 0
 
     # 検査できないときは、Python のエラーを出さずに1行で知らせて終了コード 2
@@ -192,23 +218,35 @@ def main():
         patch = git(repo, "show", "--format=commit %h%nAuthor: %an <%ae>%nCommitter: %cn <%ce>%n%n%B", "-p", c)
         lines = added_lines(patch)
         total += print_table(f"コミット {c}（見出し・本文と足した行・{len(lines)}行）",
-                             scan(lines, terms, allow, allow_lines), a.known)
+                             scan(lines, terms, allow, allow_lines), known)
     if rng and not commits:
         print(f"\n## push する差分: {rng} にコミットなし")
 
+    tree_empty = False   # --tree で検査できたファイルが0個か
     if a.tree:
-        lines = []
+        lines, read = [], 0
         files = [f for f in git(repo, "ls-files").split("\n") if f]
         for f in files:
             try:
                 text = (repo / f).read_text(encoding="utf-8")
             except (UnicodeDecodeError, FileNotFoundError, IsADirectoryError):
                 continue
+            read += 1
             lines += [(f"{f}:{i}", t) for i, t in enumerate(text.splitlines(), 1)]
-        total += print_table(f"今の中身（{len(files)}ファイル・{len(lines)}行）",
-                             scan(lines, terms, allow, allow_lines), a.known)
+        skipped = f"・飛ばした {len(files) - read}ファイル" if len(files) > read else ""
+        total += print_table(f"今の中身（{read}ファイル・{len(lines)}行{skipped}）",
+                             scan(lines, terms, allow, allow_lines), known)
+        # 検査するファイルが0個のまま「ヒット合計 0」で通さない（git add のし忘れで、何も見ずに 0 で終わるため）
+        tree_empty = read == 0
+        if not files:
+            print("\n今の中身に git が追っているファイルが1つも無いので、検査できません。git add をしたかを確かめてください")
+        elif not read:
+            print(f"\n今の中身の {len(files)}ファイルは、どれも UTF-8 で読めない（または作業フォルダに無い）ので、検査できません。"
+                  "ファイルが作業フォルダにあるかを確かめてください")
 
-    print(f"\n検査語 {len(terms)}語（{Path(a.words).name}）／ヒット合計 {total}（既知 {', '.join(a.known) or 'なし'} を除く）")
+    print(f"\n検査語 {len(terms)}語（{Path(a.words).name}）／ヒット合計 {total}（既知 {', '.join(taken) or 'なし'} を除く）")
+    if tree_empty:
+        return 1 if total else 2   # コミットに当たりがあれば 1 を先にする
     return 1 if total else 0
 
 
