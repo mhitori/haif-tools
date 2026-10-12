@@ -1,0 +1,8 @@
+/* 架空のサイト「まめ工房の記録」の見た目（本番確認を試すための見本） */
+html { scroll-padding-top: 72px; }
+body { margin: 0; font: 17px/1.8 sans-serif; color: #222; background: #fff; }
+.site-header { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #ccc; padding: 4px 16px; }
+.site-header a { display: inline-block; min-height: 44px; min-width: 44px; line-height: 44px; color: #222; text-decoration: none; }
+main { max-width: 680px; margin: 0 auto; padding: 0 16px 32px; }
+main img { max-width: 100%; height: auto; }
+.more { display: block; min-height: 44px; line-height: 44px; color: #0b5394; }

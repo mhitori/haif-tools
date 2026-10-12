@@ -21,13 +21,15 @@ A public set of tools that a non-engineer built with AI and uses daily; the buil
 | [session-brief](tools/session-brief/) | 決める側のAI（チャット）にその日の最後に「準備票」を1枚書かせ、翌朝の新しいチャットの先頭に貼るための型（Markdown 3ファイル） | [AIは前の日を覚えていない。だから毎朝、決める側のAIに1枚貼る](https://hitori-ai-factory.com/tsukaikata/code-brief-04/) |
 | [note_export](tools/note_export/) | note転載キット。サイトの記事の md を1本入れると、note に貼る直前までの5つ（本文・表の画像・図の写し・見出し画像・貼る手順書）を出す | [note転載キットを公開します](https://hitori-ai-factory.com/jitsuroku/note-kit/) |
 | [word-scan](tools/word-scan/) | 出したくない語スキャン。公開するリポジトリに push する前に、出したくない語（名前・メールアドレス・ホームフォルダ名など）が入っていないかを検査する | [出したくない語スキャンを公開します](https://hitori-ai-factory.com/jitsuroku/word-scan-eight-stops/) |
+| [prod-check](tools/prod-check/) | 本番確認。push のあとに、公開中のページを1ページずつ確かめる（開けるか・カードに使う3つの値・いちばん大きい画像・スマホの幅〈390px〉の6項目）。1つでも外れたら止まる | [本番確認を公開します](https://hitori-ai-factory.com/jitsuroku/prod-check-seven-pages/) |
 
 ## 共通の前提
 
 - Python 3 の標準ライブラリだけ、または HTML 1枚で動くように作っています。追加のインストールは不要です
 - 例外は note_export で、画像を作るために Pillow と書体（Noto Sans JP）が要ります（README の「用意するもの」）
+- もう1つの例外は prod-check で、ページをブラウザで開いて測るために Playwright と Chromium が要ります（README の「用意するもの」）
 - code-brief と session-brief は Markdown のファイルだけで、動くプログラムはありません
-- ツールは自分のPCの中で動きます。入力したファイルをどこにも送信しません。例外は x-autopost-board で、GitHub Actions の上で動き、X API に接続します
+- ツールは自分のPCの中で動きます。入力したファイルをどこにも送信しません。例外は x-autopost-board で、GitHub Actions の上で動き、X API に接続します。prod-check は、確かめるサイトのページをネットから読みます（読むだけで、手元のファイルは送りません）
 
 ## 問い合わせ
 
