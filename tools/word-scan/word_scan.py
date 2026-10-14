@@ -37,6 +37,7 @@ import argparse
 import collections
 import os
 import re
+import secrets
 import subprocess
 import sys
 from pathlib import Path
@@ -110,29 +111,51 @@ def scan(lines, terms, allow, allow_lines=()):
     return out
 
 
-def added_lines(patch):
-    """git show -p の出力から、見出し・本文と、足した行・新しいファイルの名前だけを [(場所, 行)] で返す。"""
-    cur, out, in_diff, new_file = "（ヘッダ・メッセージ）", [], False, False
+# メッセージの終わりの印（走らせるたびに作る。本文に同じ行が書かれることはない）
+MSG_END = "word-scan-message-end-" + secrets.token_hex(16)
+SHOW_FORMAT = "--format=commit %h%nAuthor: %an <%ae>%nCommitter: %cn <%ce>%n%n%B%n" + MSG_END
+
+
+def added_lines(patch, end=MSG_END):
+    """git show -p（SHOW_FORMAT）の出力から、見出し・本文と、足した行・新しいファイルの名前だけを [(場所, 行)] で返す。
+    印の行（end）より前は全部メッセージ。印のあとの「diff --git」「diff --cc」から差分に入る。"""
+    cur, out, in_msg, in_diff, in_hunk, new_file, cols = "（ヘッダ・メッセージ）", [], True, False, False, False, 1
     for line in patch.splitlines():
-        if line.startswith("diff --git"):
-            cur, in_diff, new_file = line.split(" b/")[-1], True, False
+        if in_msg:
+            # 本文に「diff --git」で始まる行があっても、印までは差分に入らない
+            if line == end:
+                in_msg = False
+            else:
+                out.append((cur, line))
+            continue
+        if line.startswith("diff --git "):
+            cur, in_diff, in_hunk, new_file = line.split(" b/")[-1], True, False, False
+            continue
+        if line.startswith(("diff --cc ", "diff --combined ")):   # マージの差分（親ごとに先頭の記号が1字ずつ並ぶ）
+            cur, in_diff, in_hunk, new_file = line.split(" ", 2)[2], True, False, False
             continue
         if not in_diff:
             out.append((cur, line))
+        elif in_hunk:
+            # hunk（@@ のあと）の中では、先頭の記号の欄に「+」がある行は全部足した行（中身が「++ 」なら「+++ 」で始まる）
+            if "+" in line[:cols]:
+                out.append((cur, line))
+        elif line.startswith("@@"):
+            in_hunk = True
+            cols = len(line) - len(line.lstrip("@")) - 1   # 「@@」なら1字・マージの「@@@」なら2字
         elif line.startswith("--- "):
-            new_file = line == "--- /dev/null"
+            new_file = line == "--- /dev/null"   # ヘッダの「--- 」は最初の @@ の前にだけ出る
         elif line.startswith("+++ "):
             if new_file:
                 out.append((cur, line[4:]))   # 新しいファイルの名前も見る
         elif line.startswith(("rename to ", "copy to ")):
             out.append((cur, line))
-        elif line.startswith("+"):
-            out.append((cur, line))
     return out
 
 
 def git(repo, *args):
-    return subprocess.run(["git", "-C", str(repo), "-c", "core.quotepath=false", *args],
+    # diff.noprefix=false: 利用者の設定で「a/」「b/」が外れると、ファイルの名前を取り違えるので上書きする
+    return subprocess.run(["git", "-C", str(repo), "-c", "core.quotepath=false", "-c", "diff.noprefix=false", *args],
                           capture_output=True, text=True, check=True).stdout
 
 
@@ -215,7 +238,7 @@ def main():
 
     commits = git(repo, "log", "--format=%h", rng, "--").split() if rng else []
     for c in commits:
-        patch = git(repo, "show", "--format=commit %h%nAuthor: %an <%ae>%nCommitter: %cn <%ce>%n%n%B", "-p", c)
+        patch = git(repo, "show", "--no-color", SHOW_FORMAT, "-p", c)   # color.ui=always でも色の記号を付けない
         lines = added_lines(patch)
         total += print_table(f"コミット {c}（見出し・本文と足した行・{len(lines)}行）",
                              scan(lines, terms, allow, allow_lines), known)
